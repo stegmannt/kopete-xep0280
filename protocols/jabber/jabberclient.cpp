@@ -750,6 +750,8 @@ JabberClient::ErrorCode JabberClient::connect ( const XMPP::Jid &jid, const QStr
 				   this, SLOT (slotSubscription(Jid,QString)) );
 		QObject::connect ( d->jabberClient, SIGNAL (rosterRequestFinished(bool,int,QString)),
 				   this, SLOT (slotRosterRequestFinished(bool,int,QString)) );
+        QObject::connect ( d->jabberClient, SIGNAL (carbonsEnableFinished(bool)),
+                   this, SLOT (slotCarbonsEnableFinished(bool)) );
 		QObject::connect ( d->jabberClient, SIGNAL (rosterItemAdded(RosterItem)),
 				   this, SLOT (slotNewContact(RosterItem)) );
 		QObject::connect ( d->jabberClient, SIGNAL (rosterItemUpdated(RosterItem)),
@@ -822,6 +824,7 @@ JabberClient::ErrorCode JabberClient::connect ( const XMPP::Jid &jid, const QStr
 	features.addFeature("urn:xmpp:delay");                         // XEP-0203: Delayed Delivery
 	features.addFeature("urn:xmpp:receipts");                      // XEP-0184: Message Delivery Receipts
 	features.addFeature("urn:xmpp:thumbs:0");                      // XEP-0264: File Transfer Thumbnails
+    features.addFeature("urn:xmpp:carbons:2");                     // XEP-0280: Message Carbons
 	d->jabberClient->setFeatures(features);
 
 	// Additional features supported by libiris, but not yet by Kopete:
@@ -932,6 +935,13 @@ void JabberClient::requestRoster ()
 {
 
 	client()->rosterRequest ();
+
+}
+
+void JabberClient::enableCarbons ()
+{
+
+    client()->carbonsEnable();
 
 }
 
@@ -1156,6 +1166,11 @@ void JabberClient::slotRosterRequestFinished ( bool success, int /*statusCode*/,
 
 	emit rosterRequestFinished ( success );
 
+}
+
+void JabberClient::slotCarbonsEnableFinished ( bool success)
+{
+    emit carbonsEnableFinished(success);
 }
 
 void JabberClient::slotIncomingFileTransfer ()

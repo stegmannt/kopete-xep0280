@@ -127,6 +127,8 @@ JabberAccount::JabberAccount (JabberProtocol * parent, const QString & accountId
 	                   this, SLOT (slotSubscription(XMPP::Jid,QString)) );
 	QObject::connect ( m_jabberClient, SIGNAL (rosterRequestFinished(bool)),
 	                   this, SLOT (slotRosterRequestFinished(bool)) );
+    QObject::connect ( m_jabberClient, SIGNAL (carbonsEnableFinished(bool)),
+                       this, SLOT (slotCarbonsEnableFinished(bool)) );
 	QObject::connect ( m_jabberClient, SIGNAL (newContact(XMPP::RosterItem)),
 	                   this, SLOT (slotContactUpdated(XMPP::RosterItem)) );
 	QObject::connect ( m_jabberClient, SIGNAL (contactUpdated(XMPP::RosterItem)),
@@ -633,8 +635,12 @@ void JabberAccount::slotConnected ()
 	m_jcm = new JingleCallsManager(this);
 #endif
 
+    kDebug (JABBER_DEBUG_GLOBAL) << "Enabling carbons...";
+    m_jabberClient->enableCarbons();
+
 	kDebug (JABBER_DEBUG_GLOBAL) << "Requesting roster...";
 	m_jabberClient->requestRoster ();
+
 }
 
 void JabberAccount::slotRosterRequestFinished ( bool success )
@@ -655,6 +661,14 @@ void JabberAccount::slotRosterRequestFinished ( bool success )
 	kDebug (JABBER_DEBUG_GLOBAL) << "Setting initial presence...";
 	setPresence ( m_initialPresence );
 
+}
+
+void JabberAccount::slotCarbonsEnableFinished(bool success)
+{
+    if (success)
+        kDebug (JABBER_DEBUG_GLOBAL) << "carbons enabled";
+    else
+        kDebug (JABBER_DEBUG_GLOBAL) << "carbons not enabled";
 }
 
 void JabberAccount::slotIncomingFileTransfer ()

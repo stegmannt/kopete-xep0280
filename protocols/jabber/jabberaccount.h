@@ -284,6 +284,9 @@ private slots:
 	/* Called from Psi: roster request finished */
 	void slotRosterRequestFinished ( bool success );
 
+    /* Called when carbons enable task is finished */
+    void slotCarbonsEnableFinished( bool success );
+
 	/* Called from Psi: incoming file transfer */
 	void slotIncomingFileTransfer ();
 

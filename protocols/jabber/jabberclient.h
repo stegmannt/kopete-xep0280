@@ -410,6 +410,11 @@ public:
 	 */
 	void requestRoster ();
 
+    /**
+     * Enable message carbons.
+     */
+    void enableCarbons ();
+
 signals:
 	/**
 	 * Connected successfully.
@@ -458,6 +463,11 @@ signals:
 	 * Roster has been transmitted and processed.
 	 */
 	void rosterRequestFinished ( bool success );
+
+    /**
+     * Carbons enable request hast been sent and processed.
+     */
+    void carbonsEnableFinished ( bool success );
 
 	/**
 	 * A new contact appeared on the roster.
@@ -575,6 +585,9 @@ private slots:
 
 	/* Called from Psi: roster request finished */
 	void slotRosterRequestFinished ( bool success, int statusCode, const QString &statusString );
+
+    /* Called from client after carbons request */
+    void slotCarbonsEnableFinished ( bool success );
 
 	/* Called from Psi: incoming file transfer */
 	void slotIncomingFileTransfer ();

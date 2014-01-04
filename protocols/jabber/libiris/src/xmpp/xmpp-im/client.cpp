@@ -919,6 +919,22 @@ void Client::slotRosterRequestFinished()
 	emit rosterRequestFinished(r->success(), r->statusCode(), r->statusString());
 }
 
+void Client::carbonsEnable()
+{
+    if (!this->isActive())
+       return;
+
+    JT_CarbonsEnable *carbons = new JT_CarbonsEnable(rootTask());
+    connect(carbons, SIGNAL(finished()), this, SLOT(slotCarbonsEnableFinished()));
+    carbons->go(true);
+}
+
+void Client::slotCarbonsEnableFinished()
+{
+    JT_CarbonsEnable *carbons = (JT_CarbonsEnable*)sender();
+    emit carbonsEnableFinished(carbons->success());
+}
+
 void Client::importRoster(const Roster &r)
 {
 	emit beginImportRoster();

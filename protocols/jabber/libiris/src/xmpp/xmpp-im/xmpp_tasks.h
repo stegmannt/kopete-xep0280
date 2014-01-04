@@ -455,6 +455,19 @@ namespace XMPP
 		JT_PongServer(Task *);
 		bool take(const QDomElement &);
 	};
+
+    class JT_CarbonsEnable : public Task
+    {
+        Q_OBJECT
+    public:
+        JT_CarbonsEnable(Task *);
+        ~JT_CarbonsEnable();
+
+        void onGo();
+        bool take(const QDomElement &);
+    private:
+        QDomElement mIQ;
+    };
 }
 
 #endif

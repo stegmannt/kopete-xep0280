@@ -80,6 +80,7 @@ namespace XMPP
 		Jid jid() const;
 
 		void rosterRequest();
+        void carbonsEnable();
 		void sendMessage(const Message &);
 		void sendSubscription(const Jid &, const QString &, const QString& nick = QString());
 		void setPresence(const Status &);
@@ -141,6 +142,7 @@ namespace XMPP
 		void rosterItemAdded(const RosterItem &);
 		void rosterItemUpdated(const RosterItem &);
 		void rosterItemRemoved(const RosterItem &);
+        void carbonsEnableFinished(bool);
 		void resourceAvailable(const Jid &, const Resource &);
 		void resourceUnavailable(const Jid &, const Resource &);
 		void presenceError(const Jid &, int, const QString &);
@@ -171,6 +173,7 @@ namespace XMPP
 		void streamOutgoingXml(const QString &);
 
 		void slotRosterRequestFinished();
+        void slotCarbonsEnableFinished();
 
 		// basic daemons
 		void ppSubscription(const Jid &, const QString &, const QString&);
