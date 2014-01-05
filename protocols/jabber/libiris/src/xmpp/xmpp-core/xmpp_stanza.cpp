@@ -593,6 +593,10 @@ QString Stanza::lang() const
 	return d->e.attributeNS(NS_XML, "lang", QString());
 }
 
+Stream* Stanza::stream() const {
+    return d->s;
+}
+
 void Stanza::setTo(const Jid &j)
 {
 	d->e.setAttribute("to", j.full());

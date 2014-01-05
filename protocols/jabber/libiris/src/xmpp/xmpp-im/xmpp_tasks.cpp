@@ -896,7 +896,6 @@ bool JT_PushMessage::take(const QDomElement &e)
 		//printf("bad message\n");
 		return false;
 	}
-
 	emit message(m);
 	return true;
 }
@@ -2109,7 +2108,7 @@ JT_CarbonsEnable::JT_CarbonsEnable(Task *parent) : Task(parent)
     mIQ.setAttribute("xmlns","jabber:client");
 
     QDomElement enable = doc()->createElement("enable");
-    enable.setAttribute("xmlns","urn:xmpp:carbons:2");
+    enable.setAttribute("xmlns","urn:xmpp:carbons:0");
 
     mIQ.appendChild(enable);
 }

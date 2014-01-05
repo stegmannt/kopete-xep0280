@@ -110,6 +110,7 @@ namespace XMPP
 		QString id() const;
 		QString type() const;
 		QString lang() const;
+        Stream* stream() const;
 
 		void setTo(const Jid &j);
 		void setFrom(const Jid &j);

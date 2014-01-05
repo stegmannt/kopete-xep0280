@@ -146,6 +146,12 @@ namespace XMPP {
 		void addBoBData(const BoBData &);
 		QList<BoBData> bobDataList() const;
 
+        // XEP-0280 message carbons
+        const Message* forwarded() const;
+        void setForwarded(Message*);
+        bool carbon() const;
+        void setCarbon(bool);
+
 		// XEP-0047 ibb
 		const IBBData& ibbData() const;
 

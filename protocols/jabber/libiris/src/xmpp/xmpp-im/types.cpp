@@ -961,7 +961,9 @@ public:
 	MUCDecline mucDecline;
 	QString mucPassword;
 
-	bool spooled, wasEncrypted;
+    Message *forwarded;
+
+    bool spooled, wasEncrypted,carbon;
 };
 
 //! \brief Constructs Message with given Jid information.
@@ -980,6 +982,8 @@ Message::Message(const Jid &to)
 	d->spooled = false;
 	d->wasEncrypted = false;
 	d->errorCode = -1;*/
+    d->carbon = false;
+    d->forwarded = 0;
 	d->chatState = StateNone;
 	d->messageReceipt = ReceiptNone;
 }
@@ -1005,7 +1009,9 @@ Message & Message::operator=(const Message &from)
 //! \brief Destroy Message object.
 Message::~Message()
 {
-	delete d;
+    if (d->forwarded != 0)
+        delete d->forwarded;
+    delete d;
 }
 
 //! \brief Return receiver's Jid information.
@@ -1194,6 +1200,26 @@ void Message::setTimeStamp(const QDateTime &ts, bool send)
 {
 	d->timeStampSend = send;
 	d->timeStamp = ts;
+}
+
+const Message* Message::forwarded() const
+{
+    return d->forwarded;
+}
+
+void Message::setForwarded(Message *m)
+{
+    d->forwarded = m;
+}
+
+void Message::setCarbon(bool carbon)
+{
+    d->carbon = carbon;
+}
+
+bool Message::carbon() const
+{
+    return d->carbon;
 }
 
 //! \brief Return list of urls attached to message.
@@ -2009,6 +2035,21 @@ bool Message::fromStanza(const Stanza &s, bool useTimeZoneOffset, int timeZoneOf
 	if (!t.isNull()) {
 		d->ibbData.fromXml(t);
 	}
+
+    //forwarded message
+    t = childElementsByTagNameNS(root, "urn:xmpp:forward:0", "forwarded").item(0).toElement();
+    if (!t.isNull()) {
+        Stanza fs = s.stream()->createStanza(addCorrectNS(t));
+        Message *fm = new Message();
+        fm->fromStanza(fs,useTimeZoneOffset,timeZoneOffset);
+
+        setForwarded(fm);
+        QString carbon = t.parentNode().toElement().attribute("xmlns");
+        if (carbon == "received" || carbon == "sent")
+        {
+            setCarbon(true);
+        }
+    }
 
 	return true;
 }
