@@ -2108,7 +2108,7 @@ JT_CarbonsEnable::JT_CarbonsEnable(Task *parent) : Task(parent)
     mIQ.setAttribute("xmlns","jabber:client");
 
     QDomElement enable = doc()->createElement("enable");
-    enable.setAttribute("xmlns","urn:xmpp:carbons:0");
+    enable.setAttribute("xmlns","urn:xmpp:carbons:2");
 
     mIQ.appendChild(enable);
 }

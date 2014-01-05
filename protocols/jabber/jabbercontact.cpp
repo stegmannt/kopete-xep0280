@@ -307,21 +307,39 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 
 	kDebug (JABBER_DEBUG_GLOBAL) << "Received Message Type:" << message.type ();
 
+    XMPP::Jid eId = message.from();
+    XMPP::Message evaluate = XMPP::Message(message);
+    if (message.forwarded() != 0)
+    {
+        evaluate = XMPP::Message(*message.forwarded());
+        kDebug (JABBER_DEBUG_GLOBAL) << "Received Message contains forwarded message of type:" << message.forwarded()->type();
+    }
+
+    if (message.carbon()) // find the contact jid where the carbon needs to be handled
+    {
+        if (account()->client()->jid().compare(evaluate.from(),false))
+        {
+            eId = evaluate.to();
+        }
+        else
+            eId = evaluate.from();
+    }
+
 	// fetch message manager
-	JabberChatSession *mManager = manager ( message.from().resource (), Kopete::Contact::CanCreate );
+    JabberChatSession *mManager = manager ( eId.resource (), Kopete::Contact::CanCreate );
 
 	// evaluate notifications
-	if ( message.type () != "error" )
+    if ( evaluate.type () != "error" )
 	{
-		if (!message.invite().isEmpty())
+        if (!evaluate.invite().isEmpty())
 		{
-			QString room=message.invite();
-			QString originalBody=message.body().isEmpty() ? QString() :
-					i18n( "The original message is : <i>\" %1 \"</i><br />" , Qt::escape(message.body()));
+            QString room=evaluate.invite();
+            QString originalBody=evaluate.body().isEmpty() ? QString() :
+                    i18n( "The original message is : <i>\" %1 \"</i><br />" , Qt::escape(evaluate.body()));
 			QString mes=i18n("<qt><i>%1</i> has invited you to join the conference <b>%2</b><br />%3<br />"
 					"If you want to accept and join, just <b>enter your nickname</b> and press OK.<br />"
 							 "If you want to decline, press Cancel.</qt>",
-					message.from().full(), room , originalBody);
+                    eId.full(), room , originalBody);
 			
 			bool ok=false;
 			QString futureNewNickName = KInputDialog::getText( i18n( "Invited to a conference - Jabber Plugin" ),
@@ -333,27 +351,27 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 			account()->client()->joinGroupChat( roomjid.domain() , roomjid.node() , futureNewNickName );
 			return;
 		}
-		else if (message.body().isEmpty())
+        else if (evaluate.body().isEmpty())
 		// Then here could be event notifications
 		{
-			if (message.containsEvent ( XMPP::CancelEvent ) || (message.chatState() != XMPP::StateNone && message.chatState() != XMPP::StateComposing) )
+            if (evaluate.containsEvent ( XMPP::CancelEvent ) || (evaluate.chatState() != XMPP::StateNone && evaluate.chatState() != XMPP::StateComposing) )
 				mManager->receivedTypingMsg ( this, false );
-			else if (message.containsEvent ( XMPP::ComposingEvent )|| message.chatState() == XMPP::StateComposing )
+            else if (evaluate.containsEvent ( XMPP::ComposingEvent )|| evaluate.chatState() == XMPP::StateComposing )
 				mManager->receivedTypingMsg ( this, true );
-			if (message.containsEvent ( XMPP::DisplayedEvent ) )
+            if (evaluate.containsEvent ( XMPP::DisplayedEvent ) )
 				mManager->receivedEventNotification ( i18n("Message has been displayed") );
-			else if (message.containsEvent ( XMPP::DeliveredEvent ) )
+            else if (evaluate.containsEvent ( XMPP::DeliveredEvent ) )
 			{
 				mManager->receivedEventNotification ( i18n("Message has been delivered") );
-				mManager->receivedMessageState( message.eventId().toUInt(), Kopete::Message::StateSent );
+                mManager->receivedMessageState( evaluate.eventId().toUInt(), Kopete::Message::StateSent );
 				mSendsDeliveredEvent = true;
 			}
-			else if (message.containsEvent ( XMPP::OfflineEvent ) )
+            else if (evaluate.containsEvent ( XMPP::OfflineEvent ) )
 			{
 				mManager->receivedEventNotification( i18n("Message stored on the server, contact offline") );
-				mManager->receivedMessageState( message.eventId().toUInt(), Kopete::Message::StateSent );
+                mManager->receivedMessageState( evaluate.eventId().toUInt(), Kopete::Message::StateSent );
 			}
-			else if (message.chatState() == XMPP::StateGone )
+            else if (evaluate.chatState() == XMPP::StateGone )
 			{
 				if(mManager->view( Kopete::Contact::CannotCreate ))
 				{   //show an internal message if the user has not already closed his window
@@ -362,28 +380,28 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 					m.setDirection( Kopete::Message::Internal );
 					m.setImportance(Kopete::Message::Low);
 
-					mManager->appendMessage ( m, message.from().resource () );
+                    mManager->appendMessage ( m, eId.resource () );
 				}
 			}
 
 			// XEP-0184: Message Delivery Receipts
-			if ( message.messageReceipt() == ReceiptReceived )
+            if ( evaluate.messageReceipt() == ReceiptReceived )
 			{
 				mManager->receivedEventNotification ( i18n("Message has been delivered") );
-				mManager->receivedMessageState( message.messageReceiptId().toUInt(), Kopete::Message::StateSent );
+                mManager->receivedMessageState( evaluate.messageReceiptId().toUInt(), Kopete::Message::StateSent );
 				mSendsDeliveredEvent = true;
 			}
 		}
 		else
 		// Then here could be event notification requests
 		{
-			mRequestComposingEvent = message.containsEvent ( XMPP::ComposingEvent );
-			mRequestOfflineEvent = message.containsEvent ( XMPP::OfflineEvent );
-			mRequestDeliveredEvent = message.containsEvent ( XMPP::DeliveredEvent );
-			mRequestDisplayedEvent = message.containsEvent ( XMPP::DisplayedEvent);
+            mRequestComposingEvent = evaluate.containsEvent ( XMPP::ComposingEvent );
+            mRequestOfflineEvent = evaluate.containsEvent ( XMPP::OfflineEvent );
+            mRequestDeliveredEvent = evaluate.containsEvent ( XMPP::DeliveredEvent );
+            mRequestDisplayedEvent = evaluate.containsEvent ( XMPP::DisplayedEvent);
 
 			// XEP-0184: Message Delivery Receipts
-			mRequestReceiptDelivery = ( message.messageReceipt() == ReceiptRequest );
+            mRequestReceiptDelivery = ( evaluate.messageReceipt() == ReceiptRequest );
 		}
 	}
 
@@ -391,11 +409,11 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 	 * Don't display empty messages, these were most likely just carrying
 	 * event notifications or other payload.
 	 */
-	if ( message.body().isEmpty () && message.urlList().isEmpty () && !message.containsHTML() && message.xencrypted().isEmpty() && message.xsigned().isEmpty() )
+    if ( evaluate.body().isEmpty () && evaluate.urlList().isEmpty () && !evaluate.containsHTML() && evaluate.xencrypted().isEmpty() && evaluate.xsigned().isEmpty() )
 		return;
 
 	// determine message type
-	if (message.type () == "chat")
+    if (evaluate.type () == "chat")
 		viewPlugin = "kopete_chatwindow";
 	else
 		viewPlugin = "kopete_emailwindow";
@@ -404,62 +422,71 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 	contactList.append ( account()->myself () );
 
 	// check for errors
-	if ( message.type () == "error" )
+    if ( evaluate.type () == "error" )
 	{
-		mManager->receivedMessageState( message.id().toUInt(), Kopete::Message::StateError );
-		newMessage = new Kopete::Message( this, contactList );
-		newMessage->setTimestamp( message.timeStamp() );
+        mManager->receivedMessageState( evaluate.id().toUInt(), Kopete::Message::StateError );
+        if (this->account()->client()->jid().compare(evaluate.from(),false))
+            newMessage = new Kopete::Message ( contactList.first(), this );
+        else
+            newMessage = new Kopete::Message ( this, contactList );;
+        newMessage->setTimestamp( evaluate.timeStamp() );
 		newMessage->setPlainBody( i18n("Your message could not be delivered: \"%1\", Reason: \"%2\"", 
-										  message.body (), message.error().text ) );
-		newMessage->setSubject( message.subject() );
+                                          evaluate.body (), evaluate.error().text ) );
+        newMessage->setSubject( evaluate.subject() );
 		newMessage->setDirection( Kopete::Message::Inbound );
 		newMessage->setRequestedPlugin( viewPlugin );
 	}
 	else
 	{
 		// store message id for outgoing notifications
-		mLastReceivedMessageId = message.id ();
+        mLastReceivedMessageId = evaluate.id ();
 
 		// convert XMPP::Message into Kopete::Message
 		// retrieve and reformat body
-		QString body = message.body ();
-		if( !message.xencrypted().isEmpty() )
+        QString body = evaluate.body ();
+        if( !evaluate.xencrypted().isEmpty() )
 		{
 			kDebug ( JABBER_DEBUG_GLOBAL ) << "Received encrypted message";
 			if (Kopete::PluginManager::self()->plugin("kopete_cryptography"))
 			{
 				kDebug( JABBER_DEBUG_GLOBAL ) << "Kopete cryptography plugin loaded";
-				body = QString ("-----BEGIN PGP MESSAGE-----\n\n") + message.xencrypted () + QString ("\n-----END PGP MESSAGE-----\n");
+                body = QString ("-----BEGIN PGP MESSAGE-----\n\n") + evaluate.xencrypted () + QString ("\n-----END PGP MESSAGE-----\n");
 			}
 		}
-		else if( !message.xsigned().isEmpty() )
+        else if( !evaluate.xsigned().isEmpty() )
 		{
 			kDebug ( JABBER_DEBUG_GLOBAL ) << "Received signed message";
 			if (Kopete::PluginManager::self()->plugin("kopete_cryptography"))
 			{
 				kDebug( JABBER_DEBUG_GLOBAL ) << "Kopete cryptography plugin loaded";
-				body = QString ("-----BEGIN PGP MESSAGE-----\n\n") + message.xsigned () + QString ("\n-----END PGP MESSAGE-----\n");
+                body = QString ("-----BEGIN PGP MESSAGE-----\n\n") + evaluate.xsigned () + QString ("\n-----END PGP MESSAGE-----\n");
 			}
 		}
 
-		if( message.containsHTML() )
+        if( evaluate.containsHTML() )
 		{
 			kDebug ( JABBER_DEBUG_GLOBAL ) << "Received a xHTML message";
-			newMessage = new Kopete::Message ( this, contactList );
-			newMessage->setTimestamp( message.timeStamp() );
-			newMessage->setHtmlBody( message.html().toString() );
-			newMessage->setSubject( message.subject() );
-			newMessage->setDirection( Kopete::Message::Inbound );
+            if (this->account()->client()->jid().compare(evaluate.from(),false))
+                newMessage = new Kopete::Message ( contactList.first(), this );
+            else
+                newMessage = new Kopete::Message ( this, contactList );
+            newMessage->setTimestamp( evaluate.timeStamp() );
+            newMessage->setHtmlBody( evaluate.html().toString() );
+            newMessage->setSubject( evaluate.subject() );
+            newMessage->setDirection( Kopete::Message::Inbound );
 			newMessage->setRequestedPlugin( viewPlugin );
 		}
 		else if ( !body.isEmpty () )
 		{
 			kDebug ( JABBER_DEBUG_GLOBAL ) << "Received a plain text message";
-			newMessage = new Kopete::Message ( this, contactList );
-			newMessage->setTimestamp( message.timeStamp() );
+            if (this->account()->client()->jid().compare(evaluate.from(),false))
+                newMessage = new Kopete::Message ( contactList.first(), this );
+            else
+                newMessage = new Kopete::Message ( this, contactList );
+            newMessage->setTimestamp( evaluate.timeStamp() );
 			newMessage->setPlainBody( body );
-			newMessage->setSubject( message.subject() );
-			newMessage->setDirection( Kopete::Message::Inbound );
+            newMessage->setSubject( evaluate.subject() );
+            newMessage->setDirection( Kopete::Message::Inbound );
 			newMessage->setRequestedPlugin( viewPlugin );
 		}
 	}
@@ -467,7 +494,7 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 	// append message to (eventually new) manager and preselect the originating resource
 	if ( newMessage )
 	{
-		mManager->appendMessage ( *newMessage, message.from().resource () );
+        mManager->appendMessage ( *newMessage, evaluate.from().resource () );
 
 		delete newMessage;
 	}
@@ -478,20 +505,24 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 	 * We need to copy it here because Iris returns a copy
 	 * and we can't work with a returned copy in a for() loop.
 	 */
-	XMPP::UrlList urlList = message.urlList();
+    XMPP::UrlList urlList = evaluate.urlList();
 
 	foreach(XMPP::UrlList::const_reference xurl, urlList)
 	{
 		QString description = !xurl.desc().isEmpty() ? Qt::escape ( xurl.desc() ) : xurl.url();
 
-		Kopete::Message msg ( this, contactList );
-		msg.setTimestamp( message.timeStamp() );
+        Kopete::Message msg;
+        if (this->account()->client()->jid().compare(evaluate.from(),false))
+            msg = Kopete::Message ( contactList.first(), this );
+        else
+            msg = Kopete::Message ( this, contactList );
+        msg.setTimestamp( evaluate.timeStamp() );
 		msg.setHtmlBody( QString ( "<a href=\"%1\">%2</a>" ).arg ( xurl.url(), description ) );
-		msg.setSubject( message.subject() );
-		msg.setDirection( Kopete::Message::Inbound );
+        msg.setSubject( evaluate.subject() );
+        msg.setDirection( Kopete::Message::Inbound );
 		msg.setRequestedPlugin( viewPlugin );
 
-		mManager->appendMessage ( msg, message.from().resource () );
+        mManager->appendMessage ( msg, evaluate.from().resource () );
 	}
 }
 

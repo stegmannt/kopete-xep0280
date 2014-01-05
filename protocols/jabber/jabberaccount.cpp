@@ -1503,13 +1503,28 @@ void JabberAccount::slotReceivedMessage (const XMPP::Message & message)
 	}
 	else
 	{
+        XMPP::Jid from;
+        if (message.carbon()) // find the contact jid where the carbon needs to be handled
+        {
+            kDebug (JABBER_DEBUG_GLOBAL) << "Received message is a message carbon.";
+            if (client()->jid().bare() == message.forwarded()->from().bare())
+                from = message.forwarded()->to();
+            else
+                from = message.forwarded()->from();
+        }
+        else
+        {
+            kDebug (JABBER_DEBUG_GLOBAL) << "Received message is not a carbon message.";
+            from = message.from();
+        }
+
 		// try to locate an exact match in our pool first
-		contactFrom = contactPool()->findExactMatch ( message.from () );
+        contactFrom = contactPool()->findExactMatch ( from );
 
 		if ( !contactFrom )
 		{
 			// we have no exact match, try a broader search
-			contactFrom = contactPool()->findRelevantRecipient ( message.from () );
+            contactFrom = contactPool()->findRelevantRecipient ( from );
 		}
 
 		// see if we found the contact in our pool
@@ -1521,7 +1536,7 @@ void JabberAccount::slotReceivedMessage (const XMPP::Message & message)
 			// NOTE: This is a stupid way to do it, but
 			// message.from().setResource("") had no
 			// effect. Iris bug?
-			XMPP::Jid jid ( message.from().bare() );
+            XMPP::Jid jid ( from.bare() );
 
 			// the contact is not in our pool, add it as a temporary contact
 			kDebug (JABBER_DEBUG_GLOBAL) << jid.full () << " is unknown to us, creating temporary contact.";
