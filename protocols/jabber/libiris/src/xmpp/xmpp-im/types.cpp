@@ -2039,7 +2039,7 @@ bool Message::fromStanza(const Stanza &s, bool useTimeZoneOffset, int timeZoneOf
     //forwarded message
     t = root.elementsByTagNameNS("urn:xmpp:forward:0", "forwarded").item(0).toElement();
     if (!t.isNull()) {
-        qDebug() << "Message contains a forwarded message.";
+        // qDebug() << "Message contains a forwarded message.";
         Stanza fs = s.stream()->createStanza(t.firstChild().toElement());
         Message *fm = new Message();
         fm->fromStanza(fs,useTimeZoneOffset,timeZoneOffset);
@@ -2051,14 +2051,9 @@ bool Message::fromStanza(const Stanza &s, bool useTimeZoneOffset, int timeZoneOf
 
         if (!carbon.isNull())
         {
-            qDebug() << "Message is also a message carbon.";
+        //    qDebug() << "Message is also a message carbon.";
             setCarbon(true);
         }
-        else {
-            qDebug() << "Message is not a message carbon.";
-        }
-    } else {
-        qDebug() << "Message contains no forwarded message.";
     }
 
 	return true;

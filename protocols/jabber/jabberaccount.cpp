@@ -1506,7 +1506,7 @@ void JabberAccount::slotReceivedMessage (const XMPP::Message & message)
         XMPP::Jid from;
         if (message.carbon()) // find the contact jid where the carbon needs to be handled
         {
-            kDebug (JABBER_DEBUG_GLOBAL) << "Received message is a message carbon.";
+            //kDebug (JABBER_DEBUG_GLOBAL) << "Received message is a message carbon.";
             if (client()->jid().bare() == message.forwarded()->from().bare())
                 from = message.forwarded()->to();
             else
@@ -1514,7 +1514,7 @@ void JabberAccount::slotReceivedMessage (const XMPP::Message & message)
         }
         else
         {
-            kDebug (JABBER_DEBUG_GLOBAL) << "Received message is not a carbon message.";
+            //kDebug (JABBER_DEBUG_GLOBAL) << "Received message is not a carbon message.";
             from = message.from();
         }
 
