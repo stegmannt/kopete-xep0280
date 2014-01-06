@@ -466,27 +466,37 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
         if( evaluate.containsHTML() )
 		{
 			kDebug ( JABBER_DEBUG_GLOBAL ) << "Received a xHTML message";
+            //check if message is a message carbon from client's jid
             if (this->account()->client()->jid().compare(evaluate.from(),false))
+            {
                 newMessage = new Kopete::Message ( contactList.first(), this );
-            else
+                newMessage->setDirection( Kopete::Message::Outbound );
+            }
+            else {
                 newMessage = new Kopete::Message ( this, contactList );
+                newMessage->setDirection( Kopete::Message::Inbound );
+            }
             newMessage->setTimestamp( evaluate.timeStamp() );
             newMessage->setHtmlBody( evaluate.html().toString() );
-            newMessage->setSubject( evaluate.subject() );
-            newMessage->setDirection( Kopete::Message::Inbound );
+            newMessage->setSubject( evaluate.subject() );;
 			newMessage->setRequestedPlugin( viewPlugin );
 		}
 		else if ( !body.isEmpty () )
 		{
 			kDebug ( JABBER_DEBUG_GLOBAL ) << "Received a plain text message";
+            //check if message is a message carbon from client's jid
             if (this->account()->client()->jid().compare(evaluate.from(),false))
+            {
                 newMessage = new Kopete::Message ( contactList.first(), this );
-            else
+                newMessage->setDirection( Kopete::Message::Outbound );
+            }
+            else {
                 newMessage = new Kopete::Message ( this, contactList );
+                newMessage->setDirection( Kopete::Message::Inbound );
+            }
             newMessage->setTimestamp( evaluate.timeStamp() );
 			newMessage->setPlainBody( body );
             newMessage->setSubject( evaluate.subject() );
-            newMessage->setDirection( Kopete::Message::Inbound );
 			newMessage->setRequestedPlugin( viewPlugin );
 		}
 	}
@@ -494,7 +504,9 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 	// append message to (eventually new) manager and preselect the originating resource
 	if ( newMessage )
 	{
-        mManager->appendMessage ( *newMessage, evaluate.from().resource () );
+        QString resource = newMessage->direction() == Kopete::Message::Inbound ? evaluate.from().resource() : evaluate.to().resource();
+
+        mManager->appendMessage ( *newMessage, resource );
 
 		delete newMessage;
 	}
@@ -512,17 +524,24 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 		QString description = !xurl.desc().isEmpty() ? Qt::escape ( xurl.desc() ) : xurl.url();
 
         Kopete::Message msg;
+        //check if message is a message carbon from client's jid
         if (this->account()->client()->jid().compare(evaluate.from(),false))
+        {
             msg = Kopete::Message ( contactList.first(), this );
-        else
+            msg.setDirection( Kopete::Message::Outbound );
+        }
+        else {
             msg = Kopete::Message ( this, contactList );
+            msg.setDirection( Kopete::Message::Inbound );
+        }
         msg.setTimestamp( evaluate.timeStamp() );
 		msg.setHtmlBody( QString ( "<a href=\"%1\">%2</a>" ).arg ( xurl.url(), description ) );
         msg.setSubject( evaluate.subject() );
         msg.setDirection( Kopete::Message::Inbound );
 		msg.setRequestedPlugin( viewPlugin );
 
-        mManager->appendMessage ( msg, evaluate.from().resource () );
+        QString resource = msg.direction() == Kopete::Message::Inbound ? evaluate.from().resource() : evaluate.to().resource();
+        mManager->appendMessage ( msg, resource );
 	}
 }
 
