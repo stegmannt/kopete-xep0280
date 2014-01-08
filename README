@@ -1,3 +1,50 @@
+== About ==
+
+This is a fork of the Kopete messenger, intended to implement XEP-0280 aka message carbons
+
+== What works (tested with prosody 0.9) ==
+
+* Automaticly enables message carbons after login
+* Receive forwarded message carbons from other clients
+
+== What parts of XEP-0280 have not been implemented (yet) ==
+
+* Disabling message carbons while being logged in.
+* Config option to disable message carbons
+* Proper handling of </gone> chat state message
+* Discovering server support (not very important)
+* Avoiding Carbons for a single message (no idea how to do that easily)
+* Taking care of auto-responses
+
+== What won't work anymore ==
+
+* Off-the-Record messaging 
+
+== Disclaimer ==
+
+I'm not an experienced KDE/Kopete programmer nor a XMPP professional. Consider the patch as lousy.
+For any suggestions please use the issue tracker.
+
+== Install ==
+
+```
+# I dont know the detailed dependencies, for Ubuntu install everything with:
+sudo apt-get build-dep kopete
+
+# remove any previous installation of kopete
+sudo apt-get remove kopete
+
+# actual build and installation steps
+git clone https://github.com/stegmannt/kopete-xep0280.git
+cd kopete-xep0280
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$(kde4-config --prefix) -DCMAKE_BUILD_TYPE=Release ..
+make
+sudo make install
+```
+
+== Original Kopete Readme ==
+
 Kopete, The KDE Messenger
 Duncan Mac-Vicar Prett <duncan@kde.org>, and a cast of thousands.
 http://kopete.kde.org
