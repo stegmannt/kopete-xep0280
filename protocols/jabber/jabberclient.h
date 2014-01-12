@@ -414,6 +414,11 @@ public:
      * Enable message carbons.
      */
     void enableCarbons ();
+	
+	 /**
+	  * Return true if carbons are enabled
+	  */
+	 bool carbonsEnabled() const;
 
 signals:
 	/**

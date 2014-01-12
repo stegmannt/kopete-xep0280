@@ -945,6 +945,11 @@ void JabberClient::enableCarbons ()
 
 }
 
+bool JabberClient::carbonsEnabled() const
+{
+    return client()->carbonsEnabled();
+}
+
 void JabberClient::slotPsiDebug ( const QString & _msg )
 {
 	QString msg = _msg;

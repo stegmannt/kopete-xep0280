@@ -134,6 +134,8 @@ JabberChatSession::~JabberChatSession( )
 	JabberAccount * a = dynamic_cast<JabberAccount *>(Kopete::ChatSession::account ());
 	if( !a ) //When closing kopete, the account is partially destroyed already,  dynamic_cast return 0
 		return;
+    if ( !a->client()->carbonsEnabled()) // XEP-0280: Dont send Gone chat messages
+        return;
 	if ( a->configGroup()->readEntry ("SendEvents", true) &&
 			 a->configGroup()->readEntry ("SendGoneEvent", true) )
 		sendNotification( Gone );
