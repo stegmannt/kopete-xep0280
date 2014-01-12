@@ -136,6 +136,7 @@ public:
 	int tzoffset;
 	bool useTzoffset;	// manual tzoffset is old way of doing utc<->local translations
 	bool active;
+    bool carbonsEnabled;
 
 	LiveRoster roster;
 	ResourceList resourceList;
@@ -155,6 +156,7 @@ Client::Client(QObject *par)
 	d->tzoffset = 0;
 	d->useTzoffset = false;
 	d->active = false;
+    d->carbonsEnabled = false;
 	d->osname = "N/A";
 	d->clientName = "N/A";
 	d->clientVersion = "0.0";
@@ -267,6 +269,11 @@ BoBManager *Client::bobManager() const
 bool Client::isActive() const
 {
 	return d->active;
+}
+
+bool Client::carbonsEnabled() const
+{
+    return d->carbonsEnabled;
 }
 
 QString Client::groupChatPassword(const QString& host, const QString& room) const
@@ -932,6 +939,8 @@ void Client::carbonsEnable()
 void Client::slotCarbonsEnableFinished()
 {
     JT_CarbonsEnable *carbons = (JT_CarbonsEnable*)sender();
+    d->carbonsEnabled = !carbons->disable() & carbons->success(); //set internal carbons enabled state
+
     emit carbonsEnableFinished(carbons->success());
 }
 

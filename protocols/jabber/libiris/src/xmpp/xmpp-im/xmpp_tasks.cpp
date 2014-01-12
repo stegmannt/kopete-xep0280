@@ -2101,26 +2101,41 @@ bool JT_PongServer::take(const QDomElement &e)
  * \brief Enables carbons
  */
 
-JT_CarbonsEnable::JT_CarbonsEnable(Task *parent) : Task(parent)
+class JT_CarbonsEnable::CarbonsPrivate
 {
+public:
+    CarbonsPrivate() {}
+    bool disable;
+};
+
+JT_CarbonsEnable::JT_CarbonsEnable(Task *parent, bool disable) : Task(parent)
+{
+    c = new CarbonsPrivate();
+    c->disable = disable;
+
     mIQ = createIQ(doc(), "set", "", id());
     mIQ.setAttribute("from", client()->jid().full());
     mIQ.setAttribute("xmlns","jabber:client");
 
-    QDomElement enable = doc()->createElement("enable");
-    enable.setAttribute("xmlns","urn:xmpp:carbons:2");
+    QDomElement attribute = disable ? doc()->createElement("disable") : doc()->createElement("enable");
+    attribute.setAttribute("xmlns","urn:xmpp:carbons:2");
 
-    mIQ.appendChild(enable);
+    mIQ.appendChild(attribute);
 }
 
 JT_CarbonsEnable::~JT_CarbonsEnable()
 {
-
+    delete c;
 }
 
 void JT_CarbonsEnable::onGo()
 {
     send(mIQ);
+}
+
+bool JT_CarbonsEnable::disable() const
+{
+    return c->disable;
 }
 
 bool JT_CarbonsEnable::take(const QDomElement &x)

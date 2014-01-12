@@ -126,6 +126,8 @@ namespace XMPP
 		void setFileTransferEnabled(bool b);
 		FileTransferManager *fileTransferManager() const;
 
+        bool carbonsEnabled() const;
+
 		QString groupChatPassword(const QString& host, const QString& room) const;
 		bool groupChatJoin(const QString &host, const QString &room, const QString &nick, const QString& password = QString(), int maxchars = -1, int maxstanzas = -1, int seconds = -1, const QDateTime &since = QDateTime(), const Status& = Status());
 		void groupChatSetStatus(const QString &host, const QString &room, const Status &);

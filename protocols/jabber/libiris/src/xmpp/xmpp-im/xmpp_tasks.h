@@ -460,13 +460,16 @@ namespace XMPP
     {
         Q_OBJECT
     public:
-        JT_CarbonsEnable(Task *);
+        JT_CarbonsEnable(Task *, bool disable = false);
         ~JT_CarbonsEnable();
 
         void onGo();
         bool take(const QDomElement &);
+        bool disable() const;
     private:
         QDomElement mIQ;
+        class CarbonsPrivate;
+        CarbonsPrivate *c;
     };
 }
 
