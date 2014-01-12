@@ -2104,14 +2104,16 @@ bool JT_PongServer::take(const QDomElement &e)
 class JT_CarbonsEnable::CarbonsPrivate
 {
 public:
-    CarbonsPrivate() {}
+    CarbonsPrivate(bool disable = false)
+    { 
+      this->disable = disable; 
+    }
     bool disable;
 };
 
 JT_CarbonsEnable::JT_CarbonsEnable(Task *parent, bool disable) : Task(parent)
 {
-    c = new CarbonsPrivate();
-    c->disable = disable;
+    c = new CarbonsPrivate(disable);
 
     mIQ = createIQ(doc(), "set", "", id());
     mIQ.setAttribute("from", client()->jid().full());
