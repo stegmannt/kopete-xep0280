@@ -6,15 +6,15 @@ This is a fork of the Kopete messenger, intended to implement XEP-0280 aka messa
 
 * Automaticly enables message carbons after login
 * Receive forwarded message carbons from other clients
+* Proper handling of </gone> chat state message
 
 == What parts of XEP-0280 have not been implemented (yet) ==
 
 * Disabling message carbons while being logged in.
 * Config option to disable message carbons
-* Proper handling of </gone> chat state message
 * Discovering server support (not very important)
 * Avoiding Carbons for a single message (no idea how to do that easily)
-* Taking care of auto-responses
+* Taking care of auto-responses (kopete doesnt seem to support that anyway)
 
 == What won't work anymore ==
 
