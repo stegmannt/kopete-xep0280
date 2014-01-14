@@ -371,7 +371,7 @@ void JabberContact::handleIncomingMessage (const XMPP::Message & message)
 				mManager->receivedEventNotification( i18n("Message stored on the server, contact offline") );
                 mManager->receivedMessageState( evaluate.eventId().toUInt(), Kopete::Message::StateSent );
 			}
-            else if (evaluate.chatState() == XMPP::StateGone )
+            else if (evaluate.chatState() == XMPP::StateGone && evaluate.from().compare(eId, false) ) // XEP-0280: Skip gone messages from our account
 			{
 				if(mManager->view( Kopete::Contact::CannotCreate ))
 				{   //show an internal message if the user has not already closed his window
